@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shanghai & Shenzhen — Tech Cities Briefing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0a0a0a;--ink2:#3a3a3a;--muted:#8a8a8a;
+  --rule:#ebebeb;--bg:#f5f5f3;--card:#ffffff;
+  --sh:#0a0a0a;--sz:#0a0a0a;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+#edit-bar{
+  position:sticky;top:0;z-index:100;
+  background:rgba(245,245,243,0.92);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--rule);
+  padding:10px 32px;display:flex;align-items:center;justify-content:space-between;
+}
+#edit-bar span{font-size:11px;color:var(--muted);letter-spacing:0.04em;display:flex;align-items:center;gap:6px}
+.bar-actions{display:flex;gap:8px}
+.bar-btn{
+  font-family:'Inter',sans-serif;font-size:11px;font-weight:500;letter-spacing:0.03em;
+  padding:7px 16px;border-radius:100px;cursor:pointer;border:1px solid var(--rule);
+  background:var(--card);color:var(--ink2);transition:all 0.15s;
+}
+.bar-btn:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.bar-btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+.bar-btn.primary:hover{background:#333}
+#saved-toast{
+  position:fixed;bottom:28px;right:28px;z-index:200;
+  background:var(--ink);color:#fff;font-size:12px;font-weight:500;
+  padding:10px 20px;border-radius:100px;
+  opacity:0;transform:translateY(6px);transition:all 0.2s;pointer-events:none;
+}
+#saved-toast.show{opacity:1;transform:translateY(0)}
+
+header{
+  padding:80px 48px 72px;
+  background:var(--card);
+  border-bottom:1px solid var(--rule);
+}
+.header-inner{max-width:1080px;margin:0 auto}
+.eyebrow{
+  font-size:10px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:24px;
+}
+header h1{
+  font-family:'Syne',sans-serif;font-size:clamp(40px,7vw,80px);
+  font-weight:700;line-height:1;letter-spacing:-0.02em;
+  color:var(--ink);margin-bottom:20px;
+}
+header h1 em{font-style:normal;color:var(--muted)}
+.subtitle{font-size:15px;color:var(--muted);font-weight:300;max-width:420px;line-height:1.7}
+
+main{max-width:1080px;margin:0 auto;padding:48px 48px 80px;display:grid;grid-template-columns:1fr 1fr;gap:2px;align-items:start}
+@media(max-width:700px){main{grid-template-columns:1fr;padding:32px 20px 60px}header{padding:56px 20px 48px}}
+
+.city-card{background:var(--card);border:1px solid var(--rule);overflow:hidden}
+.city-card:first-child{border-radius:12px 0 0 12px}
+.city-card:last-child{border-radius:0 12px 12px 0}
+@media(max-width:700px){
+  .city-card:first-child{border-radius:12px 12px 0 0}
+  .city-card:last-child{border-radius:0 0 12px 12px}
+}
+
+.thumb-block{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:#111;display:block;text-decoration:none}
+.thumb-block img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.4s ease,opacity 0.3s}
+.thumb-block:hover img{transform:scale(1.03);opacity:0.85}
+.thumb-meta{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:28px 20px 16px;
+  background:linear-gradient(to top,rgba(0,0,0,0.7) 0%,transparent 100%);
+  display:flex;align-items:flex-end;justify-content:space-between;
+}
+.thumb-title{font-size:12px;font-weight:500;color:#fff;letter-spacing:0.06em;text-transform:uppercase}
+.play-pill{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);
+  border-radius:100px;padding:5px 11px;font-size:11px;font-weight:500;color:#fff;
+  transition:background 0.2s;
+}
+.thumb-block:hover .play-pill{background:rgba(255,255,255,0.25)}
+.play-pill svg{width:8px;height:8px}
+
+.video-row{display:grid;grid-template-columns:1fr 1fr;gap:2px}
+
+.card-body{padding:28px}
+
+.city-num{font-size:11px;font-weight:500;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;text-transform:uppercase}
+.city-name{font-family:'Syne',sans-serif;font-size:28px;font-weight:700;letter-spacing:-0.01em;color:var(--ink);margin-bottom:6px;line-height:1}
+.city-sub{font-size:12px;color:var(--muted);margin-bottom:24px;letter-spacing:0.02em}
+
+.divider{border:none;border-top:1px solid var(--rule);margin:20px 0}
+
+.metaphor{font-size:13px;font-style:italic;color:var(--ink2);line-height:1.7;padding-left:12px;border-left:2px solid var(--rule);margin-bottom:24px}
+
+.point{display:flex;gap:16px;margin-bottom:16px;align-items:flex-start}
+.point:last-child{margin-bottom:0}
+.pt-num{font-size:10px;font-weight:500;color:var(--muted);min-width:18px;padding-top:3px;letter-spacing:0.06em}
+.pt-text{font-size:13px;line-height:1.7;color:var(--ink2)}
+.pt-text strong{font-weight:500;color:var(--ink)}
+
+.url-section{padding:16px 28px 20px;border-top:1px solid var(--rule);background:var(--bg)}
+.url-label{font-size:10px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.url-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.url-row:last-child{margin-bottom:0}
+.url-row label{font-size:11px;color:var(--muted);white-space:nowrap;min-width:56px}
+.url-input{
+  font-family:'Inter',sans-serif;font-size:11px;color:var(--ink2);
+  border:1px solid var(--rule);border-radius:6px;padding:5px 9px;
+  width:100%;background:var(--card);transition:border 0.15s;
+}
+.url-input:focus{outline:none;border-color:#aaa}
+
+[contenteditable]{outline:none;border-radius:3px;transition:background 0.15s;cursor:text}
+[contenteditable]:hover{background:rgba(0,0,0,0.04)}
+[contenteditable]:focus{background:rgba(0,0,0,0.05);box-shadow:0 0 0 2px rgba(0,0,0,0.08)}
+
+footer{
+  text-align:center;padding:28px;border-top:1px solid var(--rule);
+  font-size:11px;color:var(--muted);background:var(--card);letter-spacing:0.04em;
+}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.city-card{animation:fadeUp 0.4s ease both}
+.city-card:nth-child(2){animation-delay:0.08s}
+</style>
+</head>
+<body>
+
+<div id="edit-bar">
+  <span>
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    Click any text to edit
+  </span>
+  <div class="bar-actions">
+    <button class="bar-btn" onclick="resetAll()">Reset</button>
+    <button class="bar-btn primary" onclick="saveToFile()">Download page</button>
+  </div>
+</div>
+
+<div id="saved-toast">✓ Downloaded</div>
+
+<header>
+  <div class="header-inner">
+    <p class="eyebrow" contenteditable="true">TV Production Briefing · Tech &amp; Innovation</p>
+    <h1 contenteditable="true">Shanghai <em>&</em> Shenzhen</h1>
+    <p class="subtitle" contenteditable="true">Two cities. One hour apart. The face and the engine of China's tech revolution.</p>
+  </div>
+</header>
+
+<main>
+
+  <div class="city-card">
+    <div class="card-body">
+      <p class="city-num" contenteditable="true">City 01</p>
+      <h2 class="city-name" contenteditable="true">Shanghai</h2>
+      <p class="city-sub" contenteditable="true">25 million people · financial powerhouse</p>
+
+      <p class="metaphor" contenteditable="true">"Think New York City — but it also ate Paris and built a space programme."</p>
+
+      <div class="point">
+        <span class="pt-num" contenteditable="true">01</span>
+        <span class="pt-text" contenteditable="true"><strong>The old meets the hyper-new.</strong> 1930s Art Deco banks sit across from towers with facial-recognition lobbies. The tension is the story.</span>
+      </div>
+      <div class="point">
+        <span class="pt-num" contenteditable="true">02</span>
+        <span class="pt-text" contenteditable="true"><strong>China's AI &amp; fintech capital.</strong> Ant Group, ByteDance labs, Tesla's Gigafactory Asia — all here. The Pudong skyline is literally a monument to tech investment.</span>
+      </div>
+      <div class="point">
+        <span class="pt-num" contenteditable="true">03</span>
+        <span class="pt-text" contenteditable="true"><strong>The showroom of modern China.</strong> Government-backed smart city pilots: autonomous delivery bots, cashless everything, AI traffic systems. Engineered to impress the world.</span>
+      </div>
+    </div>
+
+    <div class="url-section">
+      <p class="url-label">Video URLs</p>
+      <div class="url-row">
+        <label>City view</label>
+        <input class="url-input" id="sh-url-1" type="text" value="https://www.youtube.com/watch?v=wJrGB8RbLV8">
+      </div>
+      <div class="url-row">
+        <label>Tech vlog</label>
+        <input class="url-input" id="sh-url-2" type="text" value="https://www.youtube.com/watch?v=t5oSxg5iG44">
+      </div>
+    </div>
+  </div>
+
+  <div class="city-card">
+    <div class="card-body">
+      <p class="city-num" contenteditable="true">City 02</p>
+      <h2 class="city-name" contenteditable="true">Shenzhen</h2>
+      <p class="city-sub" contenteditable="true">18 million people · hardware capital of Earth</p>
+
+      <p class="metaphor" contenteditable="true">"Imagine Silicon Valley — but if a fishing village became it in just 40 years, and it actually manufactures everything."</p>
+
+      <div class="point">
+        <span class="pt-num" contenteditable="true">01</span>
+        <span class="pt-text" contenteditable="true"><strong>Where gadgets are born.</strong> Huawei, DJI, BYD, Tencent — all headquartered here. If it has a chip in it, there's a good chance Shenzhen touched it.</span>
+      </div>
+      <div class="point">
+        <span class="pt-num" contenteditable="true">02</span>
+        <span class="pt-text" contenteditable="true"><strong>The world's fastest factory floor.</strong> Makers go to Huaqiangbei market — a 10-storey building of every electronic component ever made — and prototype a product in 48 hours.</span>
+      </div>
+      <div class="point">
+        <span class="pt-num" contenteditable="true">03</span>
+        <span class="pt-text" contenteditable="true"><strong>A city with zero nostalgia.</strong> It didn't exist in 1980. No ancient temples, no old districts. The entire DNA is: build fast, iterate, scale. Young, restless, relentless.</span>
+      </div>
+    </div>
+
+    <div class="url-section">
+      <p class="url-label">Video URLs</p>
+      <div class="url-row">
+        <label>City view</label>
+        <input class="url-input" id="sz-url-1" type="text" value="https://www.youtube.com/watch?v=Pw83MWjlt4E">
+      </div>
+      <div class="url-row">
+        <label>Tech vlog</label>
+        <input class="url-input" id="sz-url-2" type="text" value="https://www.youtube.com/watch?v=8CD0LKkoMzE">
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<section style="max-width:1080px;margin:0 auto;padding:0 48px 80px">
+  <div style="background:var(--card);border:1px solid var(--rule);border-radius:12px;overflow:hidden">
+    <div style="padding:28px 28px 0">
+      <p style="font-size:10px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);margin-bottom:10px" contenteditable="true">Event Spotlight</p>
+      <h2 style="font-family:'Syne',sans-serif;font-size:28px;font-weight:700;letter-spacing:-0.01em;margin-bottom:6px" contenteditable="true">SNEC Shanghai</h2>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:20px;letter-spacing:0.02em" contenteditable="true">World's largest solar energy exhibition · Shanghai New International Expo Centre</p>
+      <p style="font-size:13px;line-height:1.8;color:var(--ink2);margin-bottom:24px" contenteditable="true">SNEC is the annual heartbeat of the global solar industry, drawing hundreds of thousands of professionals, engineers, and investors to Shanghai each year. From cutting-edge photovoltaic panels to grid-scale storage and hydrogen technology, the expo floor is a live snapshot of where clean energy is headed. For our production, it's a chance to see China's green tech ambitions up close — the products, the people, and the sheer scale of it all.</p>
+    </div>
+    <div style="border-top:1px solid var(--rule);background:var(--bg);padding:16px 28px 20px">
+      <p style="font-size:10px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Impression Video</p>
+      <div style="display:flex;align-items:center;gap:8px">
+        <label style="font-size:11px;color:var(--muted);white-space:nowrap;min-width:56px">Video</label>
+        <input class="url-input" type="text" value="https://www.youtube.com/watch?v=jYcV7a098Yw" style="font-family:'Inter',sans-serif;font-size:11px;color:var(--ink2);border:1px solid var(--rule);border-radius:6px;padding:5px 9px;width:100%;background:var(--card)">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="max-width:1080px;margin:0 auto;padding:0 48px 80px">
+  <p style="font-size:10px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);margin-bottom:20px" contenteditable="true">Featured Companies</p>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px">
+
+    <div style="background:var(--card);border:1px solid var(--rule);border-radius:12px 0 0 12px;overflow:hidden;display:flex;flex-direction:column">
+      <div style="padding:28px;flex:1">
+        <p style="font-size:10px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px" contenteditable="true">01</p>
+        <h3 style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;letter-spacing:-0.01em;margin-bottom:8px" contenteditable="true">LONGi</h3>
+        <p style="font-size:11px;font-weight:500;color:var(--muted);letter-spacing:0.04em;margin-bottom:16px;display:flex;align-items:center;gap:5px" contenteditable="true"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#4a9e6b;flex-shrink:0"></span> Filmed at SNEC Shanghai</p>
+        <p style="font-size:13px;line-height:1.8;color:var(--ink2)" contenteditable="true">LONGi is the world's largest solar technology company, specialising in high-efficiency monocrystalline silicon wafers and modules. Founded in Xi'an in 2000, it has consistently broken world records for solar cell efficiency and today supplies panels to major projects across six continents. At SNEC, LONGi showcases its latest Hi-MO series — a benchmark for what utility-scale solar looks like in 2025.</p>
+      </div>
+      <div style="border-top:1px solid var(--rule);background:var(--bg);padding:14px 28px">
+        <p style="font-size:10px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Website</p>
+        <input class="url-input" type="text" value="https://www.longi.com" style="font-family:'Inter',sans-serif;font-size:11px;color:var(--ink2);border:1px solid var(--rule);border-radius:6px;padding:5px 9px;width:100%;background:var(--card)">
+      </div>
+    </div>
+
+    <div style="background:var(--card);border:1px solid var(--rule);border-radius:0;overflow:hidden;display:flex;flex-direction:column">
+      <div style="padding:28px;flex:1">
+        <p style="font-size:10px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px" contenteditable="true">02</p>
+        <h3 style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;letter-spacing:-0.01em;margin-bottom:8px" contenteditable="true">SAJ Electric</h3>
+        <p style="font-size:11px;font-weight:500;color:var(--muted);letter-spacing:0.04em;margin-bottom:16px;display:flex;align-items:center;gap:5px" contenteditable="true"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#4a9e6b;flex-shrink:0"></span> Filmed at SNEC Shanghai</p>
+        <p style="font-size:13px;line-height:1.8;color:var(--ink2)" contenteditable="true">SAJ Electric is one of China's leading inverter and energy storage manufacturers, headquartered in Guangzhou. Its products sit at the heart of residential and commercial solar systems, converting DC power into usable AC electricity as efficiently as possible. SAJ has a strong foothold in Europe and is rapidly expanding its all-in-one home energy solutions — combining solar, storage, and smart monitoring in a single system.</p>
+      </div>
+      <div style="border-top:1px solid var(--rule);background:var(--bg);padding:14px 28px">
+        <p style="font-size:10px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Website</p>
+        <input class="url-input" type="text" value="https://www.saj-electric.com" style="font-family:'Inter',sans-serif;font-size:11px;color:var(--ink2);border:1px solid var(--rule);border-radius:6px;padding:5px 9px;width:100%;background:var(--card)">
+      </div>
+    </div>
+
+    <div style="background:var(--card);border:1px solid var(--rule);border-radius:0 12px 12px 0;overflow:hidden;display:flex;flex-direction:column">
+      <div style="padding:28px;flex:1">
+        <p style="font-size:10px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px" contenteditable="true">03</p>
+        <h3 style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;letter-spacing:-0.01em;margin-bottom:8px" contenteditable="true">Anker SOLIX</h3>
+        <p style="font-size:11px;font-weight:500;color:var(--muted);letter-spacing:0.04em;margin-bottom:16px;display:flex;align-items:center;gap:5px" contenteditable="true"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#5b8dd9;flex-shrink:0"></span> Filmed at Shenzhen HQ</p>
+        <p style="font-size:13px;line-height:1.8;color:var(--ink2)" contenteditable="true">Anker SOLIX is the energy division of Anker Innovations — the Shenzhen-born brand best known for consumer electronics charging. SOLIX takes that same engineering obsession into portable and home energy storage: balcony solar kits, home batteries, and power stations designed for everyday consumers. It's a telling example of how Shenzhen's hardware culture is pivoting toward the energy transition, making clean power accessible and beautifully designed.</p>
+      </div>
+      <div style="border-top:1px solid var(--rule);background:var(--bg);padding:14px 28px">
+        <p style="font-size:10px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Website</p>
+        <input class="url-input" type="text" value="https://www.anker.com/solix" style="font-family:'Inter',sans-serif;font-size:11px;color:var(--ink2);border:1px solid var(--rule);border-radius:6px;padding:5px 9px;width:100%;background:var(--card)">
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer contenteditable="true">Prepared for Dutch TV production · Shanghai &amp; Shenzhen Tech &amp; Innovation Briefing</footer>
+
+<script>
+function getYouTubeId(url){
+  const m=url.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  return m?m[1]:null;
+}
+function updateVideo(city,num,url){
+  const id=getYouTubeId(url);
+  if(!id)return;
+  document.getElementById(city+'-img-'+num).src='https://img.youtube.com/vi/'+id+'/hqdefault.jpg';
+  document.getElementById(city+'-link-'+num).href=url;
+}
+function saveToFile(){
+  const blob=new Blob(['<!DOCTYPE html>\n'+document.documentElement.outerHTML],{type:'text/html'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='china-tech-cities.html';
+  a.click();
+  const t=document.getElementById('saved-toast');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+function resetAll(){
+  if(confirm('Reset all edits?'))location.reload();
+}
+</script>
+</body>
+</html>
